@@ -13,17 +13,13 @@ function determinePacketType(bytes){
 }
 
 function parseBatteryPacket(bytes) {
-  var parsedInformation = {};
-  var batteryLevel = bytes[1]; // Byte 2
-  var softwaresubset = bytes.slice(2,4); // Bytes 3 and 4
-  var hardwaresubset = bytes.slice(4, 6); // Bytes 5 and 6
-  var measurementInterval = bytes.slice(6,8); // Bytes 7 and 8 
-  var reserved = bytes.slice(8); // Bytes 9 and 10
-  parsedInformation.batteryLevel = batteryLevel
-  parsedInformation.softwareVersion = toString(parseInt(softwaresubset[0], 16))+"."+toString(parseInt(softwaresubset[1], 16));
-  parsedInformation.hardwareVersion = toString(parseInt(hardwaresubset[0], 16))+"."+toString(parseInt(hardwaresubset[1], 16));
-  parsedInformation.measurementInterval = parseInt(measurementInterval, 16);
-  parsedInformation.reservedValue = parseInt(reserved, 16);
+  var parsedInformation = {}; 
+  parsedInformation.batteryLevel = parseInt(bytes[1], 16); // Byte 2
+  parsedInformation.softwareVersion = toString(parseInt(bytes[2], 16))+"."+toString(parseInt(bytes[3], 16)); // Bytes 3 and 4
+  parsedInformation.hardwareVersion = toString(parseInt(bytes[4], 16))+"."+toString(parseInt(bytes[5], 16)); // Bytes 5 and 6
+  parsedInformation.measurementInterval = parseInt(bytes.slice(6,8), 16); // Bytes 7 and 8 
+  parsedInformation.reservedValue = parseInt(bytes.slice(8), 16); //Bytes 9 and 10
+  
   return parsedInformation; 
 }
 
@@ -37,7 +33,7 @@ function parseBatteryPacket(bytes) {
 // Output must be an object with the following fields:
 // - data = Object representing the decoded payload.
 function decodeUplink(input) {
-  var decoded_object = {};
+  var decodedObject = {};
   var bytes = input.bytes;
   var packetType = determinePacketType(bytes)
 
@@ -49,9 +45,7 @@ function decodeUplink(input) {
   }
   
   return {
-      data: {
-        // temp: 22.5
-      }
+      data: decodedObject
     };
   }
   
