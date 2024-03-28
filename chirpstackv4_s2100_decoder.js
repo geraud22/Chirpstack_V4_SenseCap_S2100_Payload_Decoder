@@ -1,3 +1,21 @@
+function input2HexString (arrBytes) {
+  var str = ''
+  for (var i = 0; i < arrBytes.length; i++) {
+      var tmp
+      var num = arrBytes[i]
+      if (num < 0) {
+          tmp = (255 + num + 1).toString(16)
+      } else {
+          tmp = num.toString(16)
+      }
+      if (tmp.length === 1) {
+          tmp = '0' + tmp
+      }
+      str += tmp
+  }
+  return str
+}
+
 function determinePacketType(bytes){
   var packetType = 0;
   if (bytes[0] == 0x31) {
@@ -14,15 +32,22 @@ function determinePacketType(bytes){
 
 function parseBatteryPacket(bytes) {
   var parsedInformation = {}; 
-  parsedInformation.batteryLevel = parseInt(bytes[1], 16); // Byte 2
-  parsedInformation.softwareVersion = toString(parseInt(bytes[2], 16))+"."+toString(parseInt(bytes[3], 16)); // Bytes 3 and 4
-  parsedInformation.hardwareVersion = toString(parseInt(bytes[4], 16))+"."+toString(parseInt(bytes[5], 16)); // Bytes 5 and 6
-  parsedInformation.measurementInterval = parseInt(bytes.slice(6,8), 16); // Bytes 7 and 8 
-  parsedInformation.reservedValue = parseInt(bytes.slice(8), 16); //Bytes 9 and 10
+  parsedInformation.batteryLevel = parseInt(input2HexString(bytes[1]), 16); // Byte 2
+  parsedInformation.softwareVersion = toString(parseInt(input2HexString(bytes[2]), 16))+"."+toString(parseInt(input2HexString(bytes[3]), 16)); // Bytes 3 and 4
+  parsedInformation.hardwareVersion = toString(parseInt(input2HexString(bytes[4]), 16))+"."+toString(input2HexString(parseInt(bytes[5]), 16)); // Bytes 5 and 6
+  parsedInformation.measurementInterval = parseInt(input2HexString(bytes.slice(6,8)), 16); // Bytes 7 and 8 
+  parsedInformation.reservedValue = parseInt(input2HexString(bytes.slice(8)), 16); //Bytes 9 and 10
   
   return parsedInformation; 
 }
 
+function parseSinglePacket(bytes) {
+  var decodedPacket = {};
+  decodedPacket.measurement1 = parseInt(input2HexString(bytes.slice(3,7)), 16);
+  decodedPacket.measurement2 = parseInt(input2HexString(bytes.slice(7)), 16);
+  
+  return decodedPacket;
+}
 // Decode uplink function.
 //
 // Input is an object with the following fields:
@@ -39,9 +64,10 @@ function decodeUplink(input) {
 
   switch (packetType){
     case 31:
+      decodedObject.decodedMeasurements = parseSinglePacket(bytes);
     case 30:
     case 39:
-      decoded_object.batteryInformation = parseBatteryPacket(bytes);
+      decodedObject.batteryInformation = parseBatteryPacket(bytes);
   }
   
   return {
