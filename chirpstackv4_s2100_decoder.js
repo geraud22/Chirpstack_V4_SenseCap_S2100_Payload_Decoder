@@ -43,11 +43,31 @@ function parseBatteryPacket(bytes) {
 
 function parseSinglePacket(bytes) {
   var decodedPacket = {};
-  decodedPacket.measurement1 = parseInt(input2HexString(bytes.slice(3,7)), 16);
-  decodedPacket.measurement2 = parseInt(input2HexString(bytes.slice(7)), 16);
+  decodedPacket.measurement1 = parseInt(input2HexString(bytes.slice(3, 7)), 16); // Byte 4-7
+  decodedPacket.measurement2 = parseInt(input2HexString(bytes.slice(7)), 16); // Byte 8-11
   
   return decodedPacket;
 }
+
+function parseMutliplePackets(bytes) {
+  var decodedPacket = {};
+  if (bytes[11] === 0x32 && bytes[12] === 0x34){
+    decodedPacket.measurement1 = parseInt(input2HexString(bytes.slice(3, 7)), 16); // Byte 4-7
+    decodedPacket.measurement2 = parseInt(input2HexString(bytes.slice(7, 11)), 16); // Byte 8-11
+    decodedPacket.measurement3 = parseInt(input2HexString(bytes.slice(13, 17)), 16); // Byte 14-17
+    decodedPacket.measurement4 = parseInt(input2HexString(bytes.slice(17, 21)), 16); // Byte 18-21
+    decodedPacket.measurement5 = parseInt(input2HexString(bytes.slice(24, 28)), 16); // Byte 25-28
+    decodedPacket.measurement6 = parseInt(input2HexString(bytes.slice(28, 32)), 16); // Byte 29-32
+  } else {
+    decodedPacket.measurement1 = parseInt(input2HexString(bytes.slice(3, 7)), 16); // Byte 4-7
+    decodedPacket.measurement2 = parseInt(input2HexString(bytes.slice(7, 11)), 16); // Byte 8-11
+    decodedPacket.measurement3 = parseInt(input2HexString(bytes.slice(14, 18)), 16); // Byte 15-18
+    decodedPacket.measurement2 = parseInt(input2HexString(bytes.slice(18-22)), 16); // Byte 19-22
+  }
+  
+  return decodedPacket;
+}
+
 // Decode uplink function.
 //
 // Input is an object with the following fields:
@@ -66,6 +86,7 @@ function decodeUplink(input) {
     case 31:
       decodedObject.decodedMeasurements = parseSinglePacket(bytes);
     case 30:
+      decodedObject.decodedMeasurements = parseMutliplePackets(bytes);
     case 39:
       decodedObject.batteryInformation = parseBatteryPacket(bytes);
   }
