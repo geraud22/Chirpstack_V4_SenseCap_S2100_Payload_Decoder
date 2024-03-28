@@ -1,0 +1,17 @@
+How an S2100 uplinks a payload:
+
+-Notes:
+*Frame Content is in Big-Endian Byte Order
+*Excluding Battery Packets,
+     Each "Measurement Packet" always contains 2 Measurements. If only 1 Measurement is populated with data, the second 
+     measurement will have the value 0.
+*When there are 4 Measurements, the first ID will be 0x30, the final will be 0x33. 
+*0x32 is only used when Measurements > 4.
+
+- 3 Types of Packets
+    1 - 0x39 Battery Packet
+    2 - 0x31 When Total Measurements are <= 2.
+    3. When the number of Measurements >2, there are 3 "sub packets".
+        1- First(0x30)
+        2- Middle(0x32)
+        3- Final(0x33)
