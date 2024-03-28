@@ -1,3 +1,17 @@
+function determinePacketType(bytes){
+  var packetType = 0;
+  if (bytes[0] == 0x31) {
+    packetType = 31;
+  } else if (bytes[0] == 0x30) {
+    packetType = 30;
+  } else if (bytes[0] == 0x39) {
+    packetType = 39;
+  } else {
+    packetType = 0;
+  }
+  return packetType;
+}
+
 // Decode uplink function.
 //
 // Input is an object with the following fields:
@@ -8,9 +22,12 @@
 // Output must be an object with the following fields:
 // - data = Object representing the decoded payload.
 function decodeUplink(input) {
-    return {
+  var bytes = input.bytes;
+  var packetType = determinePacketType(bytes)
+  
+  return {
       data: {
-        temp: 22.5
+        // temp: 22.5
       }
     };
   }
