@@ -17,9 +17,6 @@ function decodeUplink(input) {
     decodedObject.batteryInformation = parseBatteryPacket(bytes);
   } else {
     switch (nodeType){
-      case 31:
-        decodedObject.decodedMeasurements = parseSinglePacket(bytes);
-        break
       case "sensecapweathersensor":
         decodedObject.decodedMeasurements = parseSenseCapWeatherSensor(bytes);
         break
@@ -49,14 +46,6 @@ function parseBatteryPacket(bytes) {
   parsedInformation.reservedValue = parseInt(input2HexString(bytes.slice(8)), 16); //Bytes 9 and 10
   
   return parsedInformation; 
-}
-
-function parseSinglePacket(bytes) {
-  var decodedPacket = {};
-  decodedPacket.measurement1 = parseInt(input2HexString(bytes.slice(3, 7)), 16); // Byte 4-7
-  decodedPacket.measurement2 = parseInt(input2HexString(bytes.slice(7)), 16); // Byte 8-11
-  
-  return decodedPacket;
 }
 
 function parseSenseCapWeatherSensor(bytes) {
