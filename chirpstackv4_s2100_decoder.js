@@ -23,13 +23,8 @@ function decodeUplink(input) {
       case "sensecapweathersensor":
         decodedObject.decodedMeasurements = parseSenseCapWeatherSensor(bytes);
         break
-      case 39:
-        decodedObject.batteryInformation = parseBatteryPacket(bytes);
-        break
     }
   }
-  
-  decodedObject.payload = input2HexString(bytes);
   return {
       data: decodedObject
     };
@@ -68,10 +63,15 @@ function parseSenseCapWeatherSensor(bytes) {
   var decodedPacket = {};
   decodedPacket.temperature = parseInt(input2HexString(bytes.slice(3, 7)), 16) / 1000; // Byte 4-7
   decodedPacket.humidity = parseInt(input2HexString(bytes.slice(7, 11)), 16) / 1000; // Byte 8-11
-  decodedPacket.barometricPressureMSB = parseInt(input2HexString(bytes.slice(13, 17)), 16) / 1000; // Byte 14-17
-  decodedPacket.barometricPressureLSB = parseInt(input2HexString(bytes.slice(17, 21)), 16) / 1000; // Byte 18-21
-  decodedPacket.lightIntensityMSB = parseInt(input2HexString(bytes.slice(24, 28)), 16) / 1000; // Byte 25-28
-  decodedPacket.lightIntensityLSB = parseInt(input2HexString(bytes.slice(28, 32)), 16) / 1000; // Byte 29-32
+
+  barometricPressureMSB = parseInt(input2HexString(bytes.slice(13, 17)), 16) / 1000; // Byte 14-17
+  barometricPressureLSB = parseInt(input2HexString(bytes.slice(17, 21)), 16) / 1000; // Byte 18-21
+  decodedPacket.barometricPressure = barometricPressureMSB * 65536 + barometricPressureLSB; // Equivalent to barometricPressureMSB << 16
+  
+  lightIntensityMSB = parseInt(input2HexString(bytes.slice(24, 28)), 16) / 1000; // Byte 25-28
+  lightIntensityLSB = parseInt(input2HexString(bytes.slice(28, 32)), 16) / 1000; // Byte 29-32
+  decodedPacket.lightIntensity = ((lightIntensityMSB * 65536)+lightIntensityLSB) * 0.001; // Equivalent to lightIntensityMSB << 16
+  
   return decodedPacket;
 }
 
