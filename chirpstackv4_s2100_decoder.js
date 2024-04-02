@@ -10,7 +10,7 @@
 function decodeUplink(input) {
   var decodedObject = {};
   var bytes = input.bytes;
-  var nodeType = variables.nodeType;
+  var nodeType = input.variables.nodeType;
   var isBatteryPacket = determineBatteryPacket(bytes)
 
   if (isBatteryPacket){
@@ -29,6 +29,7 @@ function decodeUplink(input) {
     }
   }
   
+  decodedObject.payload = input2HexString(bytes);
   return {
       data: decodedObject
     };
@@ -65,32 +66,30 @@ function parseSinglePacket(bytes) {
 
 function parseSenseCapWeatherSensor(bytes) {
   var decodedPacket = {};
-  decodedPacket.temperature = parseInt(input2HexString(bytes.slice(3, 7)), 16); // Byte 4-7
-  decodedPacket.humidity = parseInt(input2HexString(bytes.slice(7, 11)), 16); // Byte 8-11
-  decodedPacket.barometricPressureMSB = parseInt(input2HexString(bytes.slice(13, 17)), 16); // Byte 14-17
-  decodedPacket.barometricPressureLSB = parseInt(input2HexString(bytes.slice(17, 21)), 16); // Byte 18-21
-  decodedPacket.lightIntensityMSB = parseInt(input2HexString(bytes.slice(24, 28)), 16); // Byte 25-28
-  decodedPacket.lightIntensityLSB = parseInt(input2HexString(bytes.slice(28, 32)), 16); // Byte 29-32
+  decodedPacket.temperature = parseInt(input2HexString(bytes.slice(3, 7)), 16) / 1000; // Byte 4-7
+  decodedPacket.humidity = parseInt(input2HexString(bytes.slice(7, 11)), 16) / 1000; // Byte 8-11
+  decodedPacket.barometricPressureMSB = parseInt(input2HexString(bytes.slice(13, 17)), 16) / 1000; // Byte 14-17
+  decodedPacket.barometricPressureLSB = parseInt(input2HexString(bytes.slice(17, 21)), 16) / 1000; // Byte 18-21
+  decodedPacket.lightIntensityMSB = parseInt(input2HexString(bytes.slice(24, 28)), 16) / 1000; // Byte 25-28
+  decodedPacket.lightIntensityLSB = parseInt(input2HexString(bytes.slice(28, 32)), 16) / 1000; // Byte 29-32
   return decodedPacket;
 }
 
-function input2HexString (arrBytes) {
-  var str = ''
-  for (var i = 0; i < arrBytes.length; i++) {
-      var tmp
-      var num = arrBytes[i]
-      if (num < 0) {
-          tmp = (255 + num + 1).toString(16)
-      } else {
-          tmp = num.toString(16)
+function input2HexString(arrBytes) {
+  // Convert bytes to hexadecimal string representation
+  const hexArray = arrBytes.map(byte => {
+      // Handle negative values using two's complement
+      if (byte < 0) {
+          // Convert to two's complement representation
+          byte = 256 + byte;
       }
-      if (tmp.length === 1) {
-          tmp = '0' + tmp
-      }
-      str += tmp
-  }
-  return str
+      return byte.toString(16);
+  });
+
+  // Join hexadecimal values with no separator
+  return hexArray.join('');
 }
+
   // Encode downlink function.
   //
   // Input is an object with the following fields:
@@ -104,4 +103,3 @@ function input2HexString (arrBytes) {
       bytes: [225, 230, 255, 0]
     };
   }
-  
