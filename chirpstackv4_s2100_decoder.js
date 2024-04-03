@@ -38,12 +38,8 @@ function determineBatteryPacket(bytes){
 }
   
 function parseBatteryPacket(bytes) {
-  var parsedInformation = {}; 
-  parsedInformation.batteryLevel = parseInt(input2HexString(bytes[1]), 16); // Byte 2
-  parsedInformation.softwareVersion = toString(parseInt(input2HexString(bytes[2]), 16))+"."+toString(parseInt(input2HexString(bytes[3]), 16)); // Bytes 3 and 4
-  parsedInformation.hardwareVersion = toString(parseInt(input2HexString(bytes[4]), 16))+"."+toString(input2HexString(parseInt(bytes[5]), 16)); // Bytes 5 and 6
-  parsedInformation.measurementInterval = parseInt(input2HexString(bytes.slice(6,8)), 16); // Bytes 7 and 8 
-  parsedInformation.reservedValue = parseInt(input2HexString(bytes.slice(8)), 16); //Bytes 9 and 10
+  var parsedInformation = {};
+  parsedInformation.batteryPercentage = loraWANV2DataFormat(bytes2HexString(bytes.slice(0,2)), 1000);
   
   return parsedInformation; 
 }
