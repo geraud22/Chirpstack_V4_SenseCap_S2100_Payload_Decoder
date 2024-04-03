@@ -50,15 +50,15 @@ function parseBatteryPacket(bytes) {
 
 function parseSenseCapWeatherSensor(bytes) {
   var decodedPacket = {};
-  decodedPacket.temperature = parseInt(input2HexString(bytes.slice(3, 7)), 16) / 1000; // Byte 4-7
-  decodedPacket.humidity = parseInt(input2HexString(bytes.slice(7, 11)), 16) / 1000; // Byte 8-11
+  decodedPacket.temperature = loraWANV2DataFormat(bytes.substring(3, 7), 1000); // Byte 4-7
+  decodedPacket.humidity = loraWANV2DataFormat(bytes.substring(7, 11), 1000); // Byte 8-11
 
-  barometricPressureMSB = parseInt(input2HexString(bytes.slice(13, 17)), 16) / 1000; // Byte 14-17
-  barometricPressureLSB = parseInt(input2HexString(bytes.slice(17, 21)), 16) / 1000; // Byte 18-21
+  barometricPressureMSB = loraWANV2DataFormat(bytes.substring(13, 17), 1000); // Byte 14-17
+  barometricPressureLSB = loraWANV2DataFormat(bytes.substring(17, 21), 1000); // Byte 18-21
   decodedPacket.barometricPressure = barometricPressureMSB * 65536 + barometricPressureLSB; // Equivalent to barometricPressureMSB << 16
   
-  lightIntensityMSB = parseInt(input2HexString(bytes.slice(24, 28)), 16) / 1000; // Byte 25-28
-  lightIntensityLSB = parseInt(input2HexString(bytes.slice(28, 32)), 16) / 1000; // Byte 29-32
+  lightIntensityMSB = loraWANV2DataFormat(bytes.substring(24, 28), 1000); // Byte 25-28
+  lightIntensityLSB = loraWANV2DataFormat(bytes.substring(28, 32), 1000); // Byte 29-32
   decodedPacket.lightIntensity = ((lightIntensityMSB * 65536)+lightIntensityLSB) * 0.001; // Equivalent to lightIntensityMSB << 16
   
   return decodedPacket;
@@ -77,6 +77,67 @@ function input2HexString(arrBytes) {
 
   // Join hexadecimal values with no separator
   return hexArray.join('');
+}
+
+/**
+ *
+ * data formatting
+ * @param str
+ * @param divisor
+ * @returns {string|number}
+ */
+function loraWANV2DataFormat (str, divisor = 1) {
+  let strReverse = bigEndianTransform(str)
+  let str2 = toBinary(strReverse)
+  if (str2.substring(0, 1) === '1') {
+      let arr = str2.split('')
+      let reverseArr = arr.map((item) => {
+          if (parseInt(item) === 1) {
+              return 0
+          } else {
+              return 1
+          }
+      })
+      str2 = parseInt(reverseArr.join(''), 2) + 1
+      return '-' + str2 / divisor
+  }
+  return parseInt(str2, 2) / divisor
+}
+
+/**
+ * Handling big-endian data formats
+ * @param data
+ * @returns {*[]}
+ */
+function bigEndianTransform (data) {
+  let dataArray = []
+  for (let i = 0; i < data.length; i += 2) {
+      dataArray.push(data.substring(i, i + 2))
+  }
+  // array of hex
+  return dataArray
+}
+
+/**
+ * Convert to an 8-digit binary number with 0s in front of the number
+ * @param arr
+ * @returns {string}
+ */
+function toBinary (arr) {
+  let binaryData = arr.map((item) => {
+      let data = parseInt(item, 16)
+          .toString(2)
+      let dataLength = data.length
+      if (data.length !== 8) {
+          for (let i = 0; i < 8 - dataLength; i++) {
+              data = `0` + data
+          }
+      }
+      return data
+  })
+  let ret = binaryData.toString()
+      .replace(/,/g, '')
+  return ret
 }
 
   // Encode downlink function.
