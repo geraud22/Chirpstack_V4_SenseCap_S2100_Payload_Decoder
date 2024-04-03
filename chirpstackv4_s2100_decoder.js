@@ -50,33 +50,36 @@ function parseBatteryPacket(bytes) {
 
 function parseSenseCapWeatherSensor(bytes) {
   var decodedPacket = {};
-  decodedPacket.temperature = loraWANV2DataFormat(bytes.substring(3, 7), 1000); // Byte 4-7
-  decodedPacket.humidity = loraWANV2DataFormat(bytes.substring(7, 11), 1000); // Byte 8-11
+  decodedPacket.temperature = loraWANV2DataFormat(bytes2HexString(bytes.slice(3, 7)), 1000); // Byte 4-7
+  decodedPacket.humidity = loraWANV2DataFormat(bytes2HexString(bytes.slice(7, 11)), 1000); // Byte 8-11
 
-  barometricPressureMSB = loraWANV2DataFormat(bytes.substring(13, 17), 1000); // Byte 14-17
-  barometricPressureLSB = loraWANV2DataFormat(bytes.substring(17, 21), 1000); // Byte 18-21
+  barometricPressureMSB = loraWANV2DataFormat(bytes2HexString(bytes.slice(13, 17)), 1000); // Byte 14-17
+  barometricPressureLSB = loraWANV2DataFormat(bytes2HexString(bytes.slice(17, 21)), 1000); // Byte 18-21
   decodedPacket.barometricPressure = barometricPressureMSB * 65536 + barometricPressureLSB; // Equivalent to barometricPressureMSB << 16
   
-  lightIntensityMSB = loraWANV2DataFormat(bytes.substring(24, 28), 1000); // Byte 25-28
-  lightIntensityLSB = loraWANV2DataFormat(bytes.substring(28, 32), 1000); // Byte 29-32
+  lightIntensityMSB = loraWANV2DataFormat(bytes2HexString(bytes.slice(24, 28)), 1000); // Byte 25-28
+  lightIntensityLSB = loraWANV2DataFormat(bytes2HexString(bytes.slice(28, 32)), 1000); // Byte 29-32
   decodedPacket.lightIntensity = ((lightIntensityMSB * 65536)+lightIntensityLSB) * 0.001; // Equivalent to lightIntensityMSB << 16
   
   return decodedPacket;
 }
 
-function input2HexString(arrBytes) {
-  // Convert bytes to hexadecimal string representation
-  const hexArray = arrBytes.map(byte => {
-      // Handle negative values using two's complement
-      if (byte < 0) {
-          // Convert to two's complement representation
-          byte = 256 + byte;
+function bytes2HexString (arrBytes) {
+  var str = ''
+  for (var i = 0; i < arrBytes.length; i++) {
+      var tmp
+      var num = arrBytes[i]
+      if (num < 0) {
+          tmp = (255 + num + 1).toString(16)
+      } else {
+          tmp = num.toString(16)
       }
-      return byte.toString(16);
-  });
-
-  // Join hexadecimal values with no separator
-  return hexArray.join('');
+      if (tmp.length === 1) {
+          tmp = '0' + tmp
+      }
+      str += tmp
+  }
+  return str
 }
 
 /**
