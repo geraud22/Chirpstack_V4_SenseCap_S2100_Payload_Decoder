@@ -139,16 +139,25 @@ function toBinary (arr) {
   return ret
 }
 
-  // Encode downlink function.
-  //
-  // Input is an object with the following fields:
-  // - data = Object representing the payload that must be encoded.
-  // - variables = Object containing the configured device variables.
-  //
-  // Output must be an object with the following fields:
-  // - bytes = Byte array containing the downlink payload.
-  function encodeDownlink(input) {
-    return {
-      bytes: [225, 230, 255, 0]
-    };
+// Encode downlink function.
+//
+// Input is an object with the following fields:
+// - data = Object representing the payload that must be encoded (hexadecimal string).
+// - variables = Object containing the configured device variables.
+//
+// Output must be an object with the following fields:
+// - bytes = Byte array containing the downlink payload.
+function encodeDownlink(input) {
+  // Convert hexadecimal string to byte array
+  const hexString = input.data.replace(/\s/g, ''); // Remove whitespace
+  const byteLength = hexString.length / 2; // Each byte consists of 2 characters in hexadecimal
+  const bytes = new Uint8Array(byteLength);
+
+  for (let i = 0; i < byteLength; i++) {
+    bytes[i] = parseInt(hexString.substr(i * 2, 2), 16);
   }
+
+  return {
+    bytes: bytes
+  };
+}
