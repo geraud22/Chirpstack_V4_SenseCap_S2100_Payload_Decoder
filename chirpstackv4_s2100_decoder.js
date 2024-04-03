@@ -39,7 +39,7 @@ function determineBatteryPacket(bytes){
   
 function parseBatteryPacket(bytes) {
   var parsedInformation = {};
-  parsedInformation.batteryPercentage = loraWANV2DataFormat(bytes2HexString(bytes.slice(1,2)), 1000);
+  parsedInformation.batteryPercentage = loraWANV2DataFormat(bytes2HexString(bytes.slice(1,2)), 10);
   
   return parsedInformation; 
 }
